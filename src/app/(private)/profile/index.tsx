@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { router } from 'expo-router'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 
 export default function Profile() {
   return (

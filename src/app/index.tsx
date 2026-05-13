@@ -1,11 +1,15 @@
-import { StatusBar } from 'expo-status-bar'
-import Login from './login/Login'
+import { Redirect } from 'expo-router'
+import { useAuth } from '../hooks/useAuth'
+import { Loading } from '../components/loading'
 
 export default function App() {
-  return (
-    <>
-      <Login />
-      <StatusBar style="auto" />
-    </>
-  )
+  const { session, loading } = useAuth()
+
+  if (loading) return <Loading />
+
+  if (session) {
+    return <Redirect href="/(private)/profile" />
+  }
+
+  return <Redirect href="/(public)/login" />
 }

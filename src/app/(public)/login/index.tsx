@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { supabase } from '../../lib/supabase'
-import { router } from 'expo-router'
+import { supabase } from '../../../lib/supabase'
+import { Redirect, router } from 'expo-router'
 
 export default function Login() {
   const [email, setEmail] = useState('')

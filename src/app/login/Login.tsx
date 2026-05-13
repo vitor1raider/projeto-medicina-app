@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native'
 import { supabase } from '../../lib/supabase'
+import { router } from 'expo-router'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -85,6 +86,7 @@ export default function Login() {
     }
 
     Alert.alert('Sucesso', 'Login realizado com sucesso.')
+    router.push('/profile')
   }
 
   async function handleSignOut() {

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar'
-import Login from './src/app/screens/Login'
+import Login from './login/Login'
 
 export default function App() {
   return (

@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react'
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { router } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
-import { Redirect, router } from 'expo-router'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     checkSession()
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user.email ?? null)
+      if (session) {
+        router.replace('/profile')
+      }
     })
 
     return () => {
@@ -36,176 +40,169 @@ export default function Login() {
       return
     }
 
-    setUserEmail(data.session?.user.email ?? null)
+    if (data.session) {
+      router.replace('/profile')
+    }
   }
 
-  async function handleSignUp() {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Preencha e-mail e senha.')
-      return
-    }
-
-    setLoading(true)
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    setLoading(false)
-
-    if (error) {
-      Alert.alert('Erro no cadastro', error.message)
-      return
-    }
-
-    Alert.alert(
-      'Cadastro realizado',
-      'Usuário criado com sucesso. Verifique o painel Authentication > Users no Supabase.'
-    )
+  function handleGoToRegister() {
+    router.push('/login/register')
   }
 
   async function handleSignIn() {
     if (!email || !password) {
-      Alert.alert('Erro', 'Preencha e-mail e senha.')
+      Alert.alert('Atenção', 'Preencha e-mail e senha.')
       return
     }
 
-    setLoading(true)
+    try {
+      setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
 
-    setLoading(false)
+      if (error) {
+        Alert.alert('Erro ao entrar', 'E-mail ou senha inválidos.')
+        return
+      }
 
-    if (error) {
-      Alert.alert('Erro no login', error.message)
-      return
+      router.replace('/profile')
+    } catch {
+      Alert.alert('Erro', 'Não foi possível realizar o login.')
+    } finally {
+      setLoading(false)
     }
-
-    Alert.alert('Sucesso', 'Login realizado com sucesso.')
-    router.push('/profile')
-  }
-
-  async function handleSignOut() {
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      Alert.alert('Erro ao sair', error.message)
-      return
-    }
-
-    Alert.alert('Sucesso', 'Usuário deslogado.')
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Teste de Autenticação</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Entrar</Text>
+          <Text style={styles.subtitle}>
+            Acesse sua conta para continuar
+          </Text>
+        </View>
 
-      <Text style={styles.status}>
-        {userEmail ? `Logado como: ${userEmail}` : 'Nenhum usuário logado'}
-      </Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>E-mail</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu e-mail"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+          <Text style={styles.label}>Senha</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite sua senha"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSignIn}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSignUp}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Carregando...' : 'Criar conta'}
-        </Text>
-      </TouchableOpacity>
+          <View style={styles.registerArea}>
+            <Text style={styles.registerText}>Ainda não tem uma conta?</Text>
 
-      <TouchableOpacity
-        style={styles.buttonSecondary}
-        onPress={handleSignIn}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleSignOut}
-      >
-        <Text style={styles.logoutText}>Sair</Text>
-      </TouchableOpacity>
-    </View>
+            <TouchableOpacity onPress={handleGoToRegister}>
+              <Text style={styles.registerLink}>Criar conta</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 12,
+  header: {
+    marginBottom: 32,
   },
-  status: {
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 24,
-    color: '#555',
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 8,
+  },
+  form: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
   },
   input: {
+    height: 48,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 16,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#d94686',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonSecondary: {
+    height: 48,
     backgroundColor: '#8b5cf6',
-    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
   },
-  logoutButton: {
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  logoutText: {
-    color: '#d94686',
+  registerArea: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+    gap: 6,
+  },
+  registerText: {
+    color: '#666',
+  },
+  registerLink: {
+    color: '#8b5cf6',
     fontWeight: 'bold',
   },
 })

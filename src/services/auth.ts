@@ -12,3 +12,24 @@ export function onAuthChange(callback: (session: Session | null) => void) {
     callback(session)
   })
 }
+
+export async function forgotPassword(email: string) {
+  const { error } =
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'projeto-medicina-app://new-password',
+    })
+
+  if (error) throw error
+}
+
+export async function updatePassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  if (error) throw error
+}
+
+export async function signOut() {
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}

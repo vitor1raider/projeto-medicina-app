@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   Alert,
+  Button,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,38 +13,23 @@ import {
 } from 'react-native'
 import { router } from 'expo-router'
 import { supabase } from '../../../lib/supabase'
+import { useAuth } from '../../../hooks/useAuth'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const { session } = useAuth();
+
+  function handleGoToForgotPassword() {
+    router.push('/forgot-password')
+  }
 
   useEffect(() => {
-    checkSession()
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        router.replace('/profile')
-      }
-    })
-
-    return () => {
-      data.subscription.unsubscribe()
+    if (session) {
+      router.replace('/home')
     }
-  }, [])
-
-  async function checkSession() {
-    const { data, error } = await supabase.auth.getSession()
-
-    if (error) {
-      console.log('Erro ao buscar sessão:', error.message)
-      return
-    }
-
-    if (data.session) {
-      router.replace('/profile')
-    }
-  }
+  }, [session])
 
   function handleGoToRegister() {
     router.push('/login/register')
@@ -68,7 +54,7 @@ export default function Login() {
         return
       }
 
-      router.replace('/profile')
+      router.replace('/home')
     } catch {
       Alert.alert('Erro', 'Não foi possível realizar o login.')
     } finally {
@@ -90,25 +76,33 @@ export default function Login() {
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>E-mail</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu e-mail"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View>
+            <Text style={styles.label}>E-mail</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu e-mail"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
 
-          <Text style={styles.label}>Senha</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite sua senha"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={{ marginTop: 16 }}>
+            <Text style={styles.label}>Senha</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite sua senha"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+
+          <TouchableOpacity onPress={handleGoToForgotPassword}>
+            <Text style={styles.recoveryPassword}>Esqueceu a senha?</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -173,7 +167,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginBottom: 16,
     backgroundColor: '#fff',
   },
   button: {
@@ -200,6 +193,13 @@ const styles = StyleSheet.create({
   },
   registerText: {
     color: '#666',
+  },
+  recoveryPassword: {
+    color: '#8b5cf6',
+    textAlign: 'right',
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 16,
   },
   registerLink: {
     color: '#8b5cf6',

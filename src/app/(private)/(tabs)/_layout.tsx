@@ -28,7 +28,7 @@ export default function TabLayout() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#121212" }}
+      style={{ flex: 1, backgroundColor: "transparent" }}
       edges={["top"]}
     >
       <Tabs

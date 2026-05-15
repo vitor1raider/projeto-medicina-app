@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 48,
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#d94686',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   loginLink: {
-    color: '#8b5cf6',
+    color: '#d94686',
     fontWeight: 'bold',
   },
 })

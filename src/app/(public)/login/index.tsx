@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 48,
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#d94686',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -195,14 +195,14 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   recoveryPassword: {
-    color: '#8b5cf6',
+    color: '#d94686',
     textAlign: 'right',
     fontSize: 14,
     marginTop: 4,
     marginBottom: 16,
   },
   registerLink: {
-    color: '#8b5cf6',
+    color: '#d94686',
     fontWeight: 'bold',
   },
 })

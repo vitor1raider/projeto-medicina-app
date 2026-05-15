@@ -1,8 +1,8 @@
-import { router } from "expo-router"
-import { useEffect } from "react"
-import { useAuth } from "../../hooks/useAuth"
+import { Stack, router } from 'expo-router'
+import { useEffect } from 'react'
+import { useAuth } from '../../hooks/useAuth'
 
-export function PublicLayout() {
+export default function PublicLayout() {
   const { loading, session } = useAuth()
 
   useEffect(() => {
@@ -11,5 +11,15 @@ export function PublicLayout() {
     }
   }, [loading, session])
 
-  return null;
+  if (loading) {
+    return null
+  }
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  )
 }

@@ -5,7 +5,10 @@ export default function App() {
   return (
     <>
       <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name='(public)' />
+        <Stack.Screen name='(private)' />
+      </Stack>
     </>
   )
 }

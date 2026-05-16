@@ -137,8 +137,8 @@ export default function Home() {
   }, [])
 
   function getFirstName(fullName: string) {
-  return fullName.trim().split(' ')[0]
-}
+    return fullName.trim().split(' ')[0]
+  }
 
   async function loadProfileName() {
     const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -160,8 +160,6 @@ export default function Home() {
     }
 
     if (!data) {
-      console.log('Perfil não encontrado para este usuário.')
-
       const fallbackName =
         userData.user.user_metadata?.name ||
         userData.user.email?.split('@')[0] ||

@@ -59,6 +59,16 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
+          name="articles"
+          options={{
+            title: "Artigos",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="newspaper-outline" color={color} size={24} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
           name="agenda"
           options={{
             title: "Agenda",

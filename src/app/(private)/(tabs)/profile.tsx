@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  title: { fontSize: 26, fontWeight: '700', color: '#1A1A1A', letterSpacing: -0.5 },
+  title: { fontSize: 26, fontFamily: 'Poppins_700Bold', color: '#1A1A1A', letterSpacing: -0.5 },
   editButton: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: '#FDE8EE',
@@ -261,8 +261,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  avatarText: { fontSize: 30, fontWeight: '700', color: '#fff' },
-  nome: { fontSize: 20, fontWeight: '700', color: '#1A1A1A', marginBottom: 4 },
+  avatarText: { fontSize: 30, fontFamily: 'Poppins_700Bold', color: '#fff' },
+  nome: { fontSize: 20, fontFamily: 'Poppins_700Bold', color: '#1A1A1A', marginBottom: 4 },
   email: { fontSize: 13, color: '#999' },
 
   // Card
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Poppins_700Bold',
     color: '#AAAAAA',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
@@ -299,11 +299,11 @@ const styles = StyleSheet.create({
   },
   infoTexts: { flex: 1 },
   infoLabel: { fontSize: 11, color: '#AAAAAA', marginBottom: 2 },
-  infoValue: { fontSize: 14, color: '#222', fontWeight: '500' },
+  infoValue: { fontSize: 14, color: '#222', fontFamily: 'Poppins_500Medium' },
 
   // MenuRow
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, gap: 12 },
-  menuLabel: { flex: 1, fontSize: 14, color: '#333', fontWeight: '500' },
+  menuLabel: { flex: 1, fontSize: 14, color: '#333', fontFamily: 'Poppins_500Medium' },
 
   // Logout
   logoutButton: {
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDE8EE',
     marginBottom: 20,
   },
-  logoutText: { fontSize: 15, fontWeight: '700', color: '#E05C7A' },
+  logoutText: { fontSize: 15, fontFamily: 'Poppins_700Bold', color: '#E05C7A' },
 
   versao: { textAlign: 'center', fontSize: 12, color: '#CCC' },
 })

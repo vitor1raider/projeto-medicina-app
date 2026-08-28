@@ -1,128 +1,128 @@
-import { supabase } from '../lib/supabase'
+import { supabase } from "../lib/supabase";
+import {
+  addDays,
+  calculateEstimatedCycleLength,
+  differenceInDays,
+  generateCycleMarkers,
+} from "../utils/ciclo";
 
-export type TipoMarcador = 'sintoma' | 'ovulacao' | 'evento' | 'fertil' | 'menstruacao'
+export type MarkerType =
+  | "sintoma"
+  | "ovulacao"
+  | "evento"
+  | "fertil"
+  | "menstruacao";
 
-export interface Marcador {
-  id: string
-  user_id: string
-  data: string
-  tipo: TipoMarcador
-  titulo: string | null
-  descricao: string | null
-  created_at: string
+export interface Marker {
+  id: string;
+  user_id: string;
+  data: string;
+  tipo: MarkerType;
+  titulo: string | null;
+  descricao: string | null;
+  created_at: string;
 }
 
-export interface CicloMestrual {
-  id: string
-  user_id: string
-  inicio: string
-  fim: string
-  duracao_ciclo: number
-  created_at: string
+export interface MenstrualCycle {
+  id: string;
+  user_id: string;
+  inicio: string;
+  fim: string;
+  duracao_ciclo: number;
+  created_at: string;
 }
 
-const DURACAO_CICLO = 28
-const DURACAO_MENSTRUACAO = 5  // dias 1-5: menstruação
-const DIA_OVULACAO = 14        // dia 14: ovulação
-const INICIO_FERTIL = 10       // dias 10-14: período fértil
-const FIM_FERTIL = 14
-
-function addDays(dateStr: string, days: number): string {
-  const date = new Date(dateStr + 'T12:00:00') // evita problema de timezone
-  date.setDate(date.getDate() + days)
-  return date.toISOString().split('T')[0]
+async function getAuthenticatedUserId(): Promise<string> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuária não autenticada");
+  return user.id;
 }
 
-function gerarMarcadoresDoCiclo(inicio: string): { data: string; tipo: TipoMarcador; titulo: string; descricao: string }[] {
-  const marcadores = []
+export async function registerCycle(cycleStartDate: string): Promise<void> {
+  const userId = await getAuthenticatedUserId();
+  const { data: existingCycles, error: historyError } = await supabase
+    .from("ciclo_mestrual")
+    .select("*")
+    .eq("user_id", userId)
+    .order("inicio", { ascending: true });
 
-  // Menstruação: dias 1 a 5
-  for (let i = 0; i < DURACAO_MENSTRUACAO; i++) {
-    marcadores.push({
-      data: addDays(inicio, i),
-      tipo: 'sintoma' as TipoMarcador,
-      titulo: 'Menstruação',
-      descricao: `Dia ${i + 1} da menstruação`,
-    })
+  if (historyError) throw historyError;
+  if (existingCycles?.some((cycle) => cycle.inicio === cycleStartDate)) {
+    throw new Error("Já existe um ciclo registrado nesta data");
   }
 
-  // Período fértil: dias 10 a 13
-  for (let i = INICIO_FERTIL - 1; i < FIM_FERTIL - 1; i++) {
-    marcadores.push({
-      data: addDays(inicio, i),
-      tipo: 'fertil' as TipoMarcador,
-      titulo: 'Período fértil',
-      descricao: 'Alta chance de fertilidade',
-    })
+  const sortedCycles = existingCycles ?? [];
+  const cycleStartDates = [
+    ...sortedCycles.map((cycle) => cycle.inicio),
+    cycleStartDate,
+  ].sort();
+  const estimatedCycleLength = calculateEstimatedCycleLength(cycleStartDates);
+  const previousCycle = [...sortedCycles]
+    .reverse()
+    .find((cycle) => cycle.inicio < cycleStartDate);
+  const nextCycle = sortedCycles.find((cycle) => cycle.inicio > cycleStartDate);
+  const newCycleLength = nextCycle
+    ? differenceInDays(cycleStartDate, nextCycle.inicio)
+    : estimatedCycleLength;
+
+  if (previousCycle) {
+    const { error: updateError } = await supabase
+      .from("ciclo_mestrual")
+      .update({
+        fim: addDays(cycleStartDate, -1),
+        duracao_ciclo: differenceInDays(previousCycle.inicio, cycleStartDate),
+      })
+      .eq("id", previousCycle.id)
+      .eq("user_id", userId);
+
+    if (updateError) throw updateError;
   }
 
-  // Ovulação: dia 14
-  marcadores.push({
-    data: addDays(inicio, DIA_OVULACAO - 1),
-    tipo: 'ovulacao' as TipoMarcador,
-    titulo: 'Ovulação',
-    descricao: 'Dia estimado de ovulação',
-  })
+  const { error: cycleError } = await supabase.from("ciclo_mestrual").insert({
+    user_id: userId,
+    inicio: cycleStartDate,
+    fim: addDays(cycleStartDate, newCycleLength - 1),
+    duracao_ciclo: newCycleLength,
+  });
 
-  return marcadores
+  if (cycleError) throw cycleError;
+
+  const markers = generateCycleMarkers(cycleStartDate, newCycleLength);
+  const rows = markers.map((marker) => ({ user_id: userId, ...marker }));
+  const { error: markerError } = await supabase
+    .from("agenda_marcadores")
+    .insert(rows);
+  if (markerError) throw markerError;
 }
 
-export async function registrarCiclo(inicioCiclo: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Usuário não autenticado')
-
-  const fim = addDays(inicioCiclo, DURACAO_CICLO - 1)
-
-  // Salva o ciclo na tabela ciclo_mestrual
-  const { error: cicloError } = await supabase
-    .from('ciclo_mestrual')
-    .insert({
-      user_id: user.id,
-      inicio: inicioCiclo,
-      fim,
-      duracao_ciclo: DURACAO_CICLO,
-    })
-
-  if (cicloError) throw cicloError
-
-  // Gera e salva os marcadores calculados
-  const marcadores = gerarMarcadoresDoCiclo(inicioCiclo)
-
-  const rows = marcadores.map(m => ({
-    user_id: user.id,
-    data: m.data,
-    tipo: m.tipo,
-    titulo: m.titulo,
-    descricao: m.descricao,
-  }))
-
-  const { error: marcErr } = await supabase
-    .from('agenda_marcadores')
-    .insert(rows)
-
-  if (marcErr) throw marcErr
-}
-
-export async function getMarcadoresByMes(year: number, month: number): Promise<Marcador[]> {
-  const inicio = `${year}-${String(month + 1).padStart(2, '0')}-01`
-  const fim = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`
-
+export async function getMarkersByMonth(
+  year: number,
+  month: number,
+): Promise<Marker[]> {
+  const userId = await getAuthenticatedUserId();
+  const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${new Date(year, month + 1, 0).getDate()}`;
   const { data, error } = await supabase
-    .from('agenda_marcadores')
-    .select('*')
-    .gte('data', inicio)
-    .lte('data', fim)
+    .from("agenda_marcadores")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("data", startDate)
+    .lte("data", endDate);
 
-  if (error) throw error
-  return data ?? []
+  if (error) throw error;
+  return data ?? [];
 }
 
-export async function getCiclos(): Promise<CicloMestrual[]> {
+export async function getCycles(): Promise<MenstrualCycle[]> {
+  const userId = await getAuthenticatedUserId();
   const { data, error } = await supabase
-    .from('ciclo_mestrual')
-    .select('*')
-    .order('inicio', { ascending: false })
+    .from("ciclo_mestrual")
+    .select("*")
+    .eq("user_id", userId)
+    .order("inicio", { ascending: false });
 
-  if (error) throw error
-  return data ?? []
+  if (error) throw error;
+  return data ?? [];
 }

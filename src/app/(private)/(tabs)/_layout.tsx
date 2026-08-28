@@ -42,6 +42,7 @@ export default function TabLayout() {
           tabBarInactiveTintColor: "#999",
           tabBarShowLabel: true,
           tabBarLabelStyle: {
+            fontFamily: 'Poppins_500Medium',
             fontSize: moderateScale(12),
             marginTop: verticalScale(4),
           },

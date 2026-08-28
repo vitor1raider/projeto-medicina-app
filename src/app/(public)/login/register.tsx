@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
     color: '#222',
   },
   subtitle: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Poppins_600SemiBold',
     color: '#333',
     marginBottom: 6,
   },
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
   loginArea: {
     flexDirection: 'row',
@@ -284,6 +284,6 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     color: '#d94686',
-    fontWeight: 'bold',
+    fontFamily: 'Poppins_700Bold',
   },
 })

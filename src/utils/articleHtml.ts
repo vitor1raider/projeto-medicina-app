@@ -4,8 +4,10 @@ export function buildArticleHtml(bodyHtml: string): string {
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
       body {
-        font-family: -apple-system, sans-serif;
+        font-family: 'Poppins', sans-serif;
         margin: 0;
         padding: 4px;
         color: #222;
@@ -22,5 +24,5 @@ export function buildArticleHtml(bodyHtml: string): string {
     </style>
   </head>
   <body>${bodyHtml}</body>
-</html>`
+</html>`;
 }

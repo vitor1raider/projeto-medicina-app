@@ -1,33 +1,47 @@
-import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
-import { getSession, getCurrentAdminProfile } from '../services/auth'
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { getSession, getCurrentAdminProfile } from "../services/auth";
 
-export default function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<'loading' | 'allowed' | 'denied'>('loading')
+export default function RequireAdmin({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [status, setStatus] = useState<"loading" | "allowed" | "denied">(
+    "loading",
+  );
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     async function check() {
-      const session = await getSession()
+      const session = await getSession();
       if (!session) {
-        if (isMounted) setStatus('denied')
-        return
+        if (isMounted) setStatus("denied");
+        return;
       }
 
-      const profile = await getCurrentAdminProfile()
-      if (isMounted) setStatus(profile?.is_admin ? 'allowed' : 'denied')
+      const profile = await getCurrentAdminProfile();
+      if (isMounted) setStatus(profile?.is_admin ? "allowed" : "denied");
     }
 
-    check()
+    check();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
-  if (status === 'loading') return <p style={{ padding: 24 }}>Carregando…</p>
-  if (status === 'denied') return <Navigate to="/login" replace />
+  if (status === "loading")
+    return (
+      <div className="loading-screen">
+        <span className="loading-indicator">
+          <span className="spinner" />
+          Verificando acesso...
+        </span>
+      </div>
+    );
+  if (status === "denied") return <Navigate to="/login" replace />;
 
-  return <>{children}</>
+  return <>{children}</>;
 }
